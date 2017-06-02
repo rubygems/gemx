@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'gemx'
+
+GemX::X.run!(ARGV)
