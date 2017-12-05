@@ -88,6 +88,9 @@ module GemX
     end
 
     def install
+      home = Gem.paths.home
+      home = File.join(home, 'gemx')
+      Gem.use_paths(home, Gem.path + [home])
       with_rubygems_config do
         Gem.install(gem_name, requirements)
       end
