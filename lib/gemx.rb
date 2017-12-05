@@ -18,6 +18,7 @@ module GemX
 
     def activate!
       gem(gem_name, *requirements)
+      Gem.finish_resolve
     end
 
     def dependency_to_s
@@ -31,11 +32,33 @@ module GemX
     def load!
       argv = ARGV.clone
       ARGV.replace arguments
-      load Gem.activate_bin_path(gem_name, executable, '>= 0.a')
-    rescue LoadError => e
-      raise unless e.path.split(File::SEPARATOR).last == executable
-      abort "Failed to load executable #{executable}," \
-            " are you sure the gem #{gem_name} contains it?"
+
+      exe = executable
+
+      contains_executable = Gem.loaded_specs.values.select do |spec|
+        spec.executables.include?(executable)
+      end
+
+      if contains_executable.any? { |s| s.name == executable }
+        contains_executable.select! { |s| s.name == executable }
+      end
+
+      if contains_executable.empty?
+        if (spec = Gem.loaded_specs[executable]) && (exe = spec.executable)
+          contains_executable << spec
+        else
+          abort "Failed to load executable #{executable}," \
+                " are you sure the gem #{gem_name} contains it?"
+        end
+      end
+
+      if contains_executable.size > 1
+        abort "Ambiguous which gem `#{executable}` should come from: " \
+              "the options are #{contains_executable.map(&:name)}, " \
+              'specify one via `-g`'
+      end
+
+      load Gem.activate_bin_path(contains_executable.first.name, exe, '>= 0.a')
     ensure
       ARGV.replace argv
     end
