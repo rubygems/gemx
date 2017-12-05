@@ -91,7 +91,7 @@ module GemX
       with_rubygems_config do
         Gem.install(gem_name, requirements)
       end
-    rescue => e
+    rescue StandardError => e
       abort "Installing #{dependency_to_s} failed:\n#{e.to_s.gsub(/^/, "\t")}"
     end
   end

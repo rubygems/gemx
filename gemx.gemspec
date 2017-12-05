@@ -1,5 +1,3 @@
-# coding: utf-8
-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'gemx/version'
@@ -25,8 +23,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler', '~> 1.15'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rubocop', '~> 0.49.1'
+  spec.add_development_dependency 'rubocop', '~> 0.51.0'
 
-  spec.required_ruby_version = '>= 2'
+  spec.required_ruby_version     = '>= 2'
   spec.required_rubygems_version = '>= 2.6.10'
 end
