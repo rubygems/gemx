@@ -9,6 +9,7 @@ RSpec.describe GemX do
     let(:argv) do
       %w[--gem cocoapods -r >\ 1 -r <\ 1.3 -v -- pod install --no-color --help]
     end
+
     subject { described_class.parse!(argv) }
 
     it 'parses correctly' do
