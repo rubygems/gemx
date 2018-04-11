@@ -71,7 +71,7 @@ module GemX
         opts.version = VERSION
         opts.banner = 'Usage: gemx [options --] command'
 
-        opts.on('-v', '--[no-]verbose', 'Run verbosely') do |v|
+        opts.on_tail('-v', '--[no-]verbose', 'Run verbosely') do |v|
           options.verbose = v
         end
 
