@@ -156,7 +156,9 @@ module GemX
       home = File.join(home, 'gemx')
       Gem.use_paths(home, Gem.path + [home])
       with_rubygems_config do
-        Gem.install(gem_name, requirements)
+        suppress_always_install do
+          Gem.install(gem_name, requirements)
+        end
       end
     rescue StandardError => e
       abort "Installing #{dependency_to_s} failed:\n#{e.to_s.gsub(/^/, "\t")}"
@@ -171,6 +173,19 @@ module GemX
         puts "\t#{k.to_s.rjust(max_length)}: #{v} "
       end
       puts
+    end
+
+    def suppress_always_install
+      name = :always_install
+      cls = ::Gem::Resolver::InstallerSet
+      method = cls.instance_method(name)
+      cls.define_method(name) { [] }
+
+      begin
+        yield
+      ensure
+        cls.define_method(name, method)
+      end
     end
   end
 end
