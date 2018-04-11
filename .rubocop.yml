@@ -1,1 +1,7 @@
 inherit_from: .rubocop_todo.yml
+
+Metrics:
+  Enabled: false
+
+Metrics/LineLength:
+  Enabled: true
