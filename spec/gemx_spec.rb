@@ -17,7 +17,7 @@ RSpec.describe GemX do
         arguments: %w[install --no-color --help],
         executable: 'pod',
         gem_name: 'cocoapods',
-        requirements: Gem::Requirement.create(['>= 0', '> 1', '< 1.3']),
+        requirements: Gem::Requirement.create(['> 1', '< 1.3']),
         verbose: true
       )
     end

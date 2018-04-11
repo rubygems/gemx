@@ -95,6 +95,8 @@ module GemX
       options.executable = args.shift
       options.gem_name ||= options.executable
       options.arguments = args
+      options.requirements.requirements.tap(&:uniq).delete(['>=', Gem::Version.new('0')])
+
       options
     end
 
