@@ -1,10 +1,7 @@
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'gemx/version'
-
 Gem::Specification.new do |spec|
   spec.name          = 'gemx'
-  spec.version       = GemX::VERSION
+  spec.version       = File.read(File.expand_path('../VERSION', __FILE__))
+                           .strip.freeze
   spec.authors       = ['Samuel Giddins']
   spec.email         = ['segiddins@segiddins.me']
 
