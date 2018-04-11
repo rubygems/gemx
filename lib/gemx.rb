@@ -104,8 +104,19 @@ module GemX
           options.conservative = c
         end
       end
-      opt_parse.parse!(args) if args.first && args.first.start_with?('-')
+
+      opt_parse.order!(args) do |v|
+        # put the non-option back at the front of the list of arguments
+        args.unshift(v)
+
+        # stop parsing once we hit the first non-option,
+        # so you can call `gemx rails --version` and it prints the rails
+        # version rather than gemx's
+        break
+      end
+
       abort(opt_parse.help) if args.empty?
+
       options.executable = args.shift
       options.gem_name ||= options.executable
       options.arguments = args
