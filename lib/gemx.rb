@@ -84,6 +84,11 @@ module GemX
                 'Run the gem with the given requirement') do |r|
           options.requirements.concat [r]
         end
+
+        opts.on('--pre',
+                'Allow resolving pre-release versions of the gem') do |_r|
+          options.requirements.concat ['>= 0.a']
+        end
       end
       opt_parse.parse!(args) if args.first && args.first.start_with?('-')
       abort(opt_parse.help) if args.empty?
