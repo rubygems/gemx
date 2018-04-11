@@ -5,7 +5,15 @@ require 'rubygems'
 
 # Execute a command that comes from a gem
 module GemX
-  X = Struct.new(:verbose, :gem_name, :requirements, :executable, :arguments)
+  X = Struct.new(
+    :gem_name,
+    :requirements,
+    :executable,
+    :arguments,
+    :conservative,
+    :verbose
+  )
+
   # The eXecutable part of this gem
   class X
     def install_if_needed
@@ -89,6 +97,12 @@ module GemX
                 'Allow resolving pre-release versions of the gem') do |_r|
           options.requirements.concat ['>= 0.a']
         end
+
+        opts.on('-c', '--[no-]conservative',
+                'Prefer the most recent installed version, ' \
+                'rather than the latest version overall') do |c|
+          options.conservative = c
+        end
       end
       opt_parse.parse!(args) if args.first && args.first.start_with?('-')
       abort(opt_parse.help) if args.empty?
@@ -101,10 +115,19 @@ module GemX
     end
 
     def self.run!(argv)
-      parse!(argv).tap do |options|
-        options.install_if_needed
-        options.load!
+      parse!(argv).run!
+    end
+
+    def run!
+      print_command if verbose
+      if conservative
+        install_if_needed
+      else
+        install
+        activate!
       end
+
+      load!
     end
 
     private
@@ -126,6 +149,17 @@ module GemX
       end
     rescue StandardError => e
       abort "Installing #{dependency_to_s} failed:\n#{e.to_s.gsub(/^/, "\t")}"
+    end
+
+    def print_command
+      puts "running gemx with:\n"
+      opts = to_h.reject { |_, v| v.nil? }
+      max_length = opts.map { |k, _| k.size }.max
+      opts.each do |k, v|
+        next if v.nil?
+        puts "\t#{k.to_s.rjust(max_length)}: #{v} "
+      end
+      puts
     end
   end
 end
