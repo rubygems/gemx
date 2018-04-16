@@ -1,3 +1,4 @@
 module GemX
-  VERSION = '0.1.0'.freeze
+  VERSION = File.read(File.expand_path('../../../VERSION', __FILE__))
+                .strip.freeze
 end

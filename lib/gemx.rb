@@ -5,7 +5,15 @@ require 'rubygems'
 
 # Execute a command that comes from a gem
 module GemX
-  X = Struct.new(:verbose, :gem_name, :requirements, :executable, :arguments)
+  X = Struct.new(
+    :gem_name,
+    :requirements,
+    :executable,
+    :arguments,
+    :conservative,
+    :verbose
+  )
+
   # The eXecutable part of this gem
   class X
     def install_if_needed
@@ -71,7 +79,7 @@ module GemX
         opts.version = VERSION
         opts.banner = 'Usage: gemx [options --] command'
 
-        opts.on('-v', '--[no-]verbose', 'Run verbosely') do |v|
+        opts.on_tail('-v', '--[no-]verbose', 'Run verbosely') do |v|
           options.verbose = v
         end
 
@@ -84,20 +92,53 @@ module GemX
                 'Run the gem with the given requirement') do |r|
           options.requirements.concat [r]
         end
+
+        opts.on('--pre',
+                'Allow resolving pre-release versions of the gem') do |_r|
+          options.requirements.concat ['>= 0.a']
+        end
+
+        opts.on('-c', '--[no-]conservative',
+                'Prefer the most recent installed version, ' \
+                'rather than the latest version overall') do |c|
+          options.conservative = c
+        end
       end
-      opt_parse.parse!(args) if args.first && args.first.start_with?('-')
+
+      opt_parse.order!(args) do |v|
+        # put the non-option back at the front of the list of arguments
+        args.unshift(v)
+
+        # stop parsing once we hit the first non-option,
+        # so you can call `gemx rails --version` and it prints the rails
+        # version rather than gemx's
+        break
+      end
+
       abort(opt_parse.help) if args.empty?
+
       options.executable = args.shift
       options.gem_name ||= options.executable
       options.arguments = args
+      options.requirements.requirements.tap(&:uniq).delete(['>=', Gem::Version.new('0')])
+
       options
     end
 
     def self.run!(argv)
-      parse!(argv).tap do |options|
-        options.install_if_needed
-        options.load!
+      parse!(argv).run!
+    end
+
+    def run!
+      print_command if verbose
+      if conservative
+        install_if_needed
+      else
+        install
+        activate!
       end
+
+      load!
     end
 
     private
@@ -115,10 +156,36 @@ module GemX
       home = File.join(home, 'gemx')
       Gem.use_paths(home, Gem.path + [home])
       with_rubygems_config do
-        Gem.install(gem_name, requirements)
+        suppress_always_install do
+          Gem.install(gem_name, requirements)
+        end
       end
     rescue StandardError => e
       abort "Installing #{dependency_to_s} failed:\n#{e.to_s.gsub(/^/, "\t")}"
+    end
+
+    def print_command
+      puts "running gemx with:\n"
+      opts = to_h.reject { |_, v| v.nil? }
+      max_length = opts.map { |k, _| k.size }.max
+      opts.each do |k, v|
+        next if v.nil?
+        puts "\t#{k.to_s.rjust(max_length)}: #{v} "
+      end
+      puts
+    end
+
+    def suppress_always_install
+      name = :always_install
+      cls = ::Gem::Resolver::InstallerSet
+      method = cls.instance_method(name)
+      cls.define_method(name) { [] }
+
+      begin
+        yield
+      ensure
+        cls.define_method(name, method)
+      end
     end
   end
 end

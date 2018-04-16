@@ -15,9 +15,10 @@ RSpec.describe GemX do
     it 'parses correctly' do
       expect(subject.to_h).to eq(
         arguments: %w[install --no-color --help],
+        conservative: nil,
         executable: 'pod',
         gem_name: 'cocoapods',
-        requirements: Gem::Requirement.create(['>= 0', '> 1', '< 1.3']),
+        requirements: Gem::Requirement.create(['> 1', '< 1.3']),
         verbose: true
       )
     end
