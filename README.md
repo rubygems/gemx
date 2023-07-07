@@ -1,3 +1,7 @@
+This repo was archived on 2023-07-06, since `gemx` has been implemented in RubyGems as the `gem exec` command.
+
+---
+
 # GemX
 
 Ever wanted it to be easier to run a command that just so happens to come as a
